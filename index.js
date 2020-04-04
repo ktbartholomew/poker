@@ -1,12 +1,33 @@
 const crypto = require('crypto');
+const winston = require('winston');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieparser = require('cookie-parser');
 const cloneDeep = require('lodash/cloneDeep');
 const Game = require('./server/game');
 
+const logger = winston.createLogger({
+  transports: [new winston.transports.Console()]
+});
+
 const app = express();
 app.use(cookieparser());
+
+app.use((req, res, next) => {
+  const begin = new Date();
+
+  res.on('finish', () => {
+    const end = new Date();
+
+    logger.info('finished response', {
+      method: req.method,
+      url: req.url,
+      status_code: res.statusCode,
+      response_time: end - begin
+    });
+  });
+  next();
+});
 const games = {};
 
 app.use((req, res, next) => {
@@ -24,6 +45,7 @@ app.use('/api/games/:gameId', (req, res, next) => {
   const game = games[req.params.gameId];
 
   if (!game) {
+    logger.info(`game ${req.params.gameId} does not exist`);
     res.status(404);
     res.end();
     return;
@@ -235,5 +257,5 @@ app.use((req, res) => {
 });
 
 app.listen(3000, () => {
-  console.log('listening on :3000');
+  logger.info('listening on :3000');
 });
