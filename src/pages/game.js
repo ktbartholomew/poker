@@ -101,7 +101,7 @@ const GamePage = () => {
         <div id="other-players" className="bg-dark mb-2">
           {game.players().map((p, idx) => {
             return (
-              <div key={idx} className="player d-block text-left p-1">
+              <div key={idx} className="player d-block text-left p-1 mb-2">
                 <div>
                   <div>
                     <span

@@ -97,6 +97,12 @@ router.post('/games/:gameId/draw', (req, res) => {
         return;
       }
 
+      if (game.pile.length >= 5) {
+        res.status(400);
+        res.end();
+        return;
+      }
+
       game.turnCard();
       return games.write(gameId, game);
     })

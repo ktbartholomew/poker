@@ -63,9 +63,17 @@ class Game {
     this.money = 0;
   }
 
+  nextDealer(dealer, players) {
+    if (players[dealer % players.length].money !== 0) {
+      return dealer % players.length;
+    }
+
+    return this.nextDealer((dealer + 1) % players.length, players);
+  }
+
   deal() {
     this.locked = true;
-    this.dealer = this.dealer + 1 < this.players.length ? this.dealer + 1 : 0;
+    this.dealer = this.nextDealer(this.dealer + 1, this.players);
     this.deck = newDeck();
     this.pile = [];
     this.money = 0;

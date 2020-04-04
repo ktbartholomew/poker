@@ -8,6 +8,8 @@ const DealerControls = ({ game, onChange }) => {
     return null;
   }
 
+  const maxBet = Math.max(...game.players().map((p) => p.bet));
+
   const deal = () => {
     return fetch(`/api/games/${game.id}/deal`, {
       method: 'POST'
@@ -17,6 +19,10 @@ const DealerControls = ({ game, onChange }) => {
   };
 
   const drawCard = () => {
+    if (game.pile().length >= 5 || maxBet > 0) {
+      return;
+    }
+
     return fetch(`/api/games/${game.id}/draw`, {
       method: 'POST'
     }).then(() => {
@@ -25,6 +31,10 @@ const DealerControls = ({ game, onChange }) => {
   };
 
   const showCards = () => {
+    if (game.pile().length !== 5) {
+      return;
+    }
+
     return fetch(`/api/games/${game.id}/showCards`, {
       method: 'POST'
     }).then(() => {
@@ -71,19 +81,32 @@ const DealerControls = ({ game, onChange }) => {
             Start Game
           </button>
         )}
-        {game.isStarted() && game.pile().length < 5 && (
-          <button className="btn btn-primary" onClick={drawCard}>
+        {game.isStarted() && (
+          <button
+            className={`btn btn-primary${
+              game.pile().length >= 5 || maxBet > 0 ? ' disabled' : ''
+            }`}
+            onClick={drawCard}
+          >
             Draw<span className="d-none d-md-inline"> Card</span>
           </button>
         )}
 
         {game.isStarted() && (
-          <button className="btn btn-light" onClick={collectBets}>
+          <button
+            className={`btn btn-light ${maxBet === 0 ? ' disabled' : ''}`}
+            onClick={collectBets}
+          >
             Collect<span className="d-none d-md-inline"> Bets</span>
           </button>
         )}
         {game.isStarted() && (
-          <button className="btn btn-light" onClick={showCards}>
+          <button
+            className={`btn btn-light${
+              game.pile().length < 5 ? ' disabled' : ''
+            }`}
+            onClick={showCards}
+          >
             Show<span className="d-none d-md-inline"> Cards</span>
           </button>
         )}

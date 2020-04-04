@@ -16,6 +16,7 @@
   align-items: flex-start;
   justify-content: flex-start;
   flex-direction: row;
+  flex-wrap: wrap;
 }
 
 #other-players .player {

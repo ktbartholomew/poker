@@ -40,16 +40,16 @@ const Card = ({ card, style: propStyles }) => {
 
   switch (suit) {
     case 1:
-      suitString = '♧';
+      suitString = '♣';
       break;
     case 2:
-      suitString = '♢';
+      suitString = '♦';
       break;
     case 3:
-      suitString = '♡';
+      suitString = '♥';
       break;
     case 4:
-      suitString = '♤';
+      suitString = '♠';
       break;
   }
 
