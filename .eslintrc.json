@@ -1,0 +1,26 @@
+{
+  "env": {
+    "es6": true,
+    "node": true,
+    "browser": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "rules": {
+    "no-undef": "error",
+    "no-unused-expressions": "error",
+    "no-unused-vars": "error",
+    "no-trailing-spaces": "error",
+    "no-multiple-empty-lines": "error",
+    "prefer-const": "error",
+    "prefer-destructuring": "warn",
+    "no-unreachable": "warn"
+  }
+}
