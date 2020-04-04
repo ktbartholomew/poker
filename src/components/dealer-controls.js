@@ -32,6 +32,14 @@ const DealerControls = ({ game, onChange }) => {
     });
   };
 
+  const collectBets = () => {
+    return fetch(`/api/games/${game.id}/collectBets`, {
+      method: 'POST'
+    }).then(() => {
+      onChange();
+    });
+  };
+
   const awardHand = (playerIndex) => {
     return (e) => {
       e.preventDefault();
@@ -43,8 +51,7 @@ const DealerControls = ({ game, onChange }) => {
           'content-type': 'application/json'
         },
         body: JSON.stringify({
-          player: playerIndex,
-          amount: game.money()
+          player: playerIndex
         })
       })
         .then(() => {
@@ -64,10 +71,26 @@ const DealerControls = ({ game, onChange }) => {
             Start Game
           </button>
         )}
+        {game.isStarted() && game.pile().length < 5 && (
+          <button className="btn btn-primary" onClick={drawCard}>
+            Draw<span className="d-none d-md-inline"> Card</span>
+          </button>
+        )}
+
+        {game.isStarted() && (
+          <button className="btn btn-light" onClick={collectBets}>
+            Collect<span className="d-none d-md-inline"> Bets</span>
+          </button>
+        )}
+        {game.isStarted() && (
+          <button className="btn btn-light" onClick={showCards}>
+            Show<span className="d-none d-md-inline"> Cards</span>
+          </button>
+        )}
         {game.isStarted() && (
           <>
             <button
-              className="btn btn-light dropdown-toggle"
+              className="btn btn-success dropdown-toggle"
               onClick={() => {
                 setDropdown(!dropdown);
               }}
@@ -89,16 +112,6 @@ const DealerControls = ({ game, onChange }) => {
               })}
             </div>
           </>
-        )}
-        {game.isStarted() && (
-          <button className="btn btn-light" onClick={showCards}>
-            Show Cards
-          </button>
-        )}
-        {game.isStarted() && game.pile().length < 5 && (
-          <button className="btn btn-primary" onClick={drawCard}>
-            Draw Card
-          </button>
         )}
       </div>
     </div>

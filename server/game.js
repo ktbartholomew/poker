@@ -1,13 +1,27 @@
 const Card = require('./card');
 
+const BUY_IN = 200;
+
+const blankGame = () => {
+  return {
+    players: [],
+    pile: [],
+    money: 0,
+    deck: newDeck(),
+    dealer: -1,
+    locked: false
+  };
+};
 class Game {
-  constructor() {
-    this.players = [];
-    this.pile = [];
-    this.money = 0;
-    this.deck = newDeck();
-    this.dealer = -1;
-    this.locked = false;
+  constructor(options) {
+    options = options || blankGame();
+
+    this.players = options.players;
+    this.pile = options.pile;
+    this.money = options.money;
+    this.deck = options.deck;
+    this.dealer = options.dealer;
+    this.locked = options.locked;
   }
 
   drawCard() {
@@ -17,7 +31,6 @@ class Game {
   turnCard() {
     this.pile.push({ card: this.drawCard(), show: true });
   }
-
   cardsRemaining() {
     return this.deck.length;
   }
@@ -27,7 +40,7 @@ class Game {
       throw new Error('game is locked');
     }
 
-    this.players.push({ ...player, cards: [], money: 200 });
+    this.players.push({ ...player, cards: [], money: BUY_IN, bet: 0 });
   }
 
   showCards() {
@@ -38,8 +51,15 @@ class Game {
     });
   }
 
-  giveMoney(player, amount) {
-    this.players[player].money += amount;
+  collectBets() {
+    this.players.forEach((p) => {
+      this.money += p.bet;
+      p.bet = 0;
+    });
+  }
+
+  giveMoney(player) {
+    this.players[player].money += this.money;
     this.money = 0;
   }
 
@@ -60,6 +80,10 @@ class Game {
         }
       });
     }
+  }
+
+  toJSON() {
+    return JSON.stringify({ ...this });
   }
 }
 

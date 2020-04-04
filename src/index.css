@@ -1,8 +1,5 @@
 #table-cards {
-  font-size: 1.45rem;
-  /* max-width: 60%; */
-  /* position: absolute;
-  top: 8vh; */
+  font-size: 1.40rem;
 }
 
 @media (min-width: 768px) {
@@ -23,6 +20,22 @@
 
 #other-players .player {
   flex: 0 0 auto;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.chips button + button {
+  margin-left: 0.5rem;
+}
+
+@media (min-width: 480px) {
+  .chips {
+    justify-content: flex-start;
+  }
 }
 
 .btn-chip {

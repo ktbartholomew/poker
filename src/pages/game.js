@@ -44,6 +44,7 @@ const GamePage = () => {
       })
       .then((j) => {
         setGame(new Game(gameId, j));
+        setError('');
       })
       .catch((e) => {
         setError(e.message);
@@ -79,6 +80,8 @@ const GamePage = () => {
     );
   }
 
+  const maxBet = Math.max(...game.players().map((p) => p.bet));
+
   return (
     <div
       style={{
@@ -101,12 +104,23 @@ const GamePage = () => {
               <div key={idx} className="player d-block text-left p-1">
                 <div>
                   <div>
-                    {p.name}
-                    {game.dealer() === idx && (
-                      <span className="badge badge-light ml-2">D</span>
-                    )}
+                    <span
+                      className={
+                        game.dealer() === idx ? 'badge badge-light' : ''
+                      }
+                    >
+                      {p.name}
+                    </span>
+                    <span className="text-success ml-2">${p.money}</span>
                   </div>
-                  <div>${p.money}</div>
+                  <div>
+                    <div>
+                      Bet:{' '}
+                      <span className={p.bet < maxBet ? 'text-danger' : ''}>
+                        ${p.bet || 0}
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 {p.cards.map((c, idx) => {
                   return (
@@ -123,32 +137,44 @@ const GamePage = () => {
             );
           })}
         </div>
-        <div id="controls">
-          <button className="btn btn-danger" onClick={fold}>
-            Fold
-          </button>
-          <button className="btn btn-chip white" onClick={bet(1)}>
-            1
-          </button>
-          <button className="btn btn-chip red" onClick={bet(5)}>
-            5
-          </button>
-          <button className="btn btn-chip blue" onClick={bet(10)}>
-            10
-          </button>
-          <button className="btn btn-chip green" onClick={bet(25)}>
-            25
-          </button>
-          <button className="btn btn-chip orange" onClick={bet(50)}>
-            50
-          </button>
+        <div className="container">
+          <div id="controls">
+            <div className="btn-group">
+              <button className="btn btn-danger" onClick={fold}>
+                Fold
+              </button>
+              <button className="btn btn-light" onClick={bet(0)}>
+                Zero Bet
+              </button>
+            </div>
+            <div className="chips mt-2">
+              <button className="btn btn-chip white" onClick={bet(1)}>
+                1
+              </button>
+              <button className="btn btn-chip red" onClick={bet(5)}>
+                5
+              </button>
+              <button className="btn btn-chip blue" onClick={bet(10)}>
+                10
+              </button>
+              <button className="btn btn-chip green" onClick={bet(25)}>
+                25
+              </button>
+              <button className="btn btn-chip orange" onClick={bet(50)}>
+                50
+              </button>
+            </div>
+          </div>
+          <div className="mt-3">
+            <span className="mr-2">Money on the table:</span>
+            <span className="h4">${game.money()}</span>
+          </div>
+          <div id="table-cards">
+            {game.pile().map((c, idx) => {
+              return <Card key={idx} card={c ? c.card : null} />;
+            })}
+          </div>
         </div>
-      </div>
-      <div id="table-cards">
-        <div>${game.money()}</div>
-        {game.pile().map((c, idx) => {
-          return <Card key={idx} card={c ? c.card : null} />;
-        })}
       </div>
     </div>
   );
