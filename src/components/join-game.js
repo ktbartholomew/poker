@@ -9,6 +9,11 @@ const JoinGame = ({ gameId, onJoin }) => {
       return;
     }
 
+    if (name.length > 20) {
+      setError('Name must be 20 characters or less');
+      return;
+    }
+
     fetch(`/api/games/${gameId}/join`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },

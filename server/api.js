@@ -44,7 +44,12 @@ router.post('/games', (req, res) => {
 
 router.post('/games/:gameId/join', bodyParser.json(), (req, res) => {
   const { gameId } = req.params;
-  if (!req.body || !req.body.name || typeof req.body.name !== 'string') {
+  if (
+    !req.body ||
+    !req.body.name ||
+    typeof req.body.name !== 'string' ||
+    req.body.name.length > 20
+  ) {
     res.status(400);
     res.end();
     return;

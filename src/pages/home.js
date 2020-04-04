@@ -14,6 +14,11 @@ const Home = () => {
       return;
     }
 
+    if (name.length > 20) {
+      setError('Name must be 20 characters or less');
+      return;
+    }
+
     fetch('/api/games', { method: 'POST' }).then((res) => {
       if (!res.ok) {
         throw new Error('failed to create new game');
