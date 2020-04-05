@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: poker
+  namespace: poker
+  labels:
+    app: poker
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    app: poker
+    role: frontend
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: poker-tls
+  namespace: poker
+spec:
+  acme:
+    config:
+    - domains:
+      - poker.appfound.co
+      http01:
+        ingressClass: nginx
+  commonName: poker.appfound.co
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  secretName: poker-tls
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: poker
+  namespace: poker
+  labels:
+    app: poker
+spec:
+  tls:
+  - secretName: poker-tls
+    hosts:
+    - poker.appfound.co
+  rules:
+  - host: poker.appfound.co
+    http:
+      paths:
+      - backend:
+          serviceName: poker
+          servicePort: 3000

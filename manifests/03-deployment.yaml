@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poker
+  namespace: poker
+  labels:
+    app: poker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: poker
+      role: frontend
+  template:
+    metadata:
+      labels:
+        app: poker
+        role: frontend
+    spec:
+      containers:
+      - name: poker
+        image: quay.io/ktbartholomew/poker:latest
+        env:
+        - name: STORAGE_PATH
+          value: "/storage"
+        volumeMounts:
+        - mountPath: "/storage"
+          name: poker-storage
+        ports:
+        - containerPort: 3000
+      volumes:
+      - name: poker-storage
+        persistentVolumeClaim:
+          claimName: poker-storage
