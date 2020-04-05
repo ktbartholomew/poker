@@ -20,6 +20,7 @@ spec:
       containers:
       - name: poker
         image: quay.io/ktbartholomew/poker:latest
+        imagePullPolicy: Always
         env:
         - name: STORAGE_PATH
           value: "/storage"
