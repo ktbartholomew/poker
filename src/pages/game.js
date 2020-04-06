@@ -38,6 +38,16 @@ const GamePage = () => {
     fetch(`/api/games/${gameId}`)
       .then((res) => {
         if (!res.ok) {
+          if (res.status === 404) {
+            throw new Error(`Game ${gameId} does not exist`);
+          }
+
+          if (res.status === 403) {
+            throw new Error(
+              `Game ${gameId} has already started, and no new players may join.`
+            );
+          }
+
           throw new Error(`Unable to load game ${gameId}`);
         }
         return res.json();
@@ -104,13 +114,10 @@ const GamePage = () => {
               <div key={idx} className="player d-block text-left p-1 mb-2">
                 <div>
                   <div>
-                    <span
-                      className={
-                        game.dealer() === idx ? 'badge badge-light' : ''
-                      }
-                    >
-                      {p.name}
-                    </span>
+                    {game.dealer() === idx && (
+                      <span className="badge badge-light mr-1">D</span>
+                    )}
+                    <span>{p.name}</span>
                     <span className="text-success ml-2">${p.money}</span>
                   </div>
                   <div>
@@ -144,7 +151,7 @@ const GamePage = () => {
                 Fold
               </button>
               <button className="btn btn-light" onClick={bet(0)}>
-                Zero Bet
+                Undo Bet
               </button>
             </div>
             <div className="chips mt-2">
