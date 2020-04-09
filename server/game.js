@@ -9,6 +9,7 @@ const blankGame = () => {
     money: 0,
     deck: newDeck(),
     dealer: -1,
+    turn: 0,
     locked: false
   };
 };
@@ -21,6 +22,7 @@ class Game {
     this.money = options.money;
     this.deck = options.deck;
     this.dealer = options.dealer;
+    this.turn = options.turn;
     this.locked = options.locked;
   }
 
@@ -30,6 +32,7 @@ class Game {
 
   turnCard() {
     this.pile.push({ card: this.drawCard(), show: true });
+    this.turn = this.nextActivePlayer(this.dealer + 1, this.players);
   }
   cardsRemaining() {
     return this.deck.length;
@@ -63,17 +66,42 @@ class Game {
     this.money = 0;
   }
 
-  nextDealer(dealer, players) {
-    if (players[dealer % players.length].money !== 0) {
-      return dealer % players.length;
+  nextActivePlayer(current, players) {
+    const p = players[current % players.length];
+    if (p.money !== 0 && p.cards.length !== 0) {
+      return current % players.length;
     }
 
-    return this.nextDealer((dealer + 1) % players.length, players);
+    return this.nextActivePlayer((current + 1) % players.length, players);
+  }
+
+  takeTurn(player, bet, fold) {
+    if (fold === true) {
+      this.players[player].cards = [];
+      this.turn = this.nextActivePlayer(this.turn + 1, this.players);
+      return;
+    }
+
+    if (!Number.isInteger(bet) || bet < 0) {
+      throw new Error('bet must be an integer');
+    }
+
+    if (this.players[player].cards.length !== 2) {
+      throw new Error('player is not holding two cards');
+    }
+
+    if (this.players[player].money < bet) {
+      throw new Error('player does not have enough money to bet');
+    }
+
+    this.players[player].money -= bet;
+    this.players[player].bet += bet;
+
+    this.turn = this.nextActivePlayer(this.turn + 1, this.players);
   }
 
   deal() {
     this.locked = true;
-    this.dealer = this.nextDealer(this.dealer + 1, this.players);
     this.deck = newDeck();
     this.pile = [];
     this.money = 0;
@@ -88,6 +116,10 @@ class Game {
         }
       });
     }
+
+    // this.nextActivePlayer requires the players to have cards first
+    this.dealer = this.nextActivePlayer(this.dealer + 1, this.players);
+    this.turn = this.nextActivePlayer(this.dealer + 1, this.players);
   }
 
   toJSON() {

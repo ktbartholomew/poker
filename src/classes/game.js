@@ -20,6 +20,14 @@ class Game {
     return this.data.dealer;
   }
 
+  turn() {
+    return this.data.turn;
+  }
+
+  myTurn() {
+    return this.data.turn === this.data.players.findIndex(({ me }) => me);
+  }
+
   me() {
     return this.data.players.filter(({ me }) => me)[0];
   }

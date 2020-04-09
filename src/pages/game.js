@@ -11,27 +11,37 @@ const GamePage = () => {
   const [fetchedAt, setFetchedAt] = useState(Date.now());
   const [game, setGame] = useState(null);
   const [error, setError] = useState('');
+  const [pendingBet, setPendingBet] = useState(0);
+  const [autoSubmit, setAutoSubmit] = useState(false);
 
   const fold = () => {
-    fetch(`/api/games/${gameId}/fold`, {
-      method: 'POST'
+    fetch(`/api/games/${gameId}/turns`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ fold: true })
     }).then(() => {
+      setPendingBet(0);
       setFetchedAt(Date.now());
     });
   };
 
-  const bet = (amount) => {
+  const bet = (bet) => {
     return (e) => {
       e.preventDefault();
-
-      fetch(`/api/games/${gameId}/bet`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ amount })
-      }).then(() => {
-        setFetchedAt(Date.now());
-      });
+      setPendingBet(pendingBet + bet);
     };
+  };
+
+  const submitBet = () => {
+    fetch(`/api/games/${gameId}/turns`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ bet: pendingBet })
+    }).then(() => {
+      setPendingBet(0);
+      setAutoSubmit(false);
+      setFetchedAt(Date.now());
+    });
   };
 
   useEffect(() => {
@@ -70,6 +80,15 @@ const GamePage = () => {
       clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    if (!autoSubmit) {
+      return;
+    }
+
+    setAutoSubmit(false);
+    submitBet();
+  }, [pendingBet, autoSubmit]);
 
   if (error) {
     return <GameError message={error} />;
@@ -110,8 +129,14 @@ const GamePage = () => {
       <div>
         <div id="other-players" className="bg-dark mb-2">
           {game.players().map((p, idx) => {
+            const playerBet = p.me ? pendingBet || p.bet : p.bet;
             return (
-              <div key={idx} className="player d-block text-left p-1 mb-2">
+              <div
+                key={idx}
+                className={`player d-block text-left p-2 pb-3${
+                  game.turn() === idx ? ' bg-light text-dark' : ''
+                }`}
+              >
                 <div>
                   <div>
                     {game.dealer() === idx && (
@@ -123,8 +148,8 @@ const GamePage = () => {
                   <div>
                     <div>
                       Bet:{' '}
-                      <span className={p.bet < maxBet ? 'text-danger' : ''}>
-                        ${p.bet || 0}
+                      <span className={playerBet < maxBet ? 'text-danger' : ''}>
+                        ${playerBet || 0}
                       </span>
                     </div>
                   </div>
@@ -145,14 +170,40 @@ const GamePage = () => {
           })}
         </div>
         <div className="container">
-          <div id="controls">
+          <div id="controls" className={!game.myTurn() ? 'invisible' : ''}>
             <div className="btn-group">
               <button className="btn btn-danger" onClick={fold}>
                 Fold
               </button>
-              <button className="btn btn-light" onClick={bet(0)}>
-                Undo Bet
+              <button
+                className="btn btn-light"
+                onClick={() => {
+                  setPendingBet(0);
+                }}
+              >
+                Undo
               </button>
+              {pendingBet === 0 && maxBet === 0 && (
+                <button className="btn btn-light" onClick={submitBet}>
+                  Check
+                </button>
+              )}
+              {pendingBet < maxBet && (
+                <button
+                  className="btn btn-light"
+                  onClick={() => {
+                    setAutoSubmit(true);
+                    setPendingBet(maxBet - game.me().bet);
+                  }}
+                >
+                  Call ${maxBet}
+                </button>
+              )}
+              {pendingBet > 0 && (
+                <button className="btn btn-success" onClick={submitBet}>
+                  Bet
+                </button>
+              )}
             </div>
             <div className="chips mt-2">
               <button className="btn btn-chip white" onClick={bet(1)}>

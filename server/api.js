@@ -137,81 +137,37 @@ router.post('/games/:gameId/showCards', (req, res) => {
     });
 });
 
-router.post('/games/:gameId/fold', (req, res) => {
+router.post('/games/:gameId/turns', bodyParser.json(), (req, res) => {
   const { gameId } = req.params;
+
   games
     .read(gameId)
     .then((game) => {
-      const playerIndex = game.players.findIndex((p) => {
-        return p.sessionid === req.cookies.sessionid;
-      });
-
-      const peopleWithCards = game.players.filter((p) => {
-        return p.cards.length > 0;
-      }).length;
-
-      if (peopleWithCards <= 1) {
-        res.status(400);
+      const currentPlayer = game.players.findIndex(
+        ({ sessionid }) => sessionid === req.cookies.sessionid
+      );
+      if (currentPlayer === -1) {
+        res.status(403);
         res.end();
         return;
       }
 
-      game.players[playerIndex].cards = [];
-      games.write(gameId, game);
+      game.takeTurn(currentPlayer, req.body.bet || 0, req.body.fold || false);
+
+      return games.write(gameId, game);
     })
     .then(() => {
       res.status(202);
       res.end();
-    });
-});
-
-router.post('/games/:gameId/bet', bodyParser.json(), (req, res) => {
-  const { gameId } = req.params;
-  games
-    .read(gameId)
-    .then((game) => {
-      const { amount } = req.body;
-
-      if (!Number.isInteger(amount) || amount < 0) {
-        res.status(400);
-        res.end();
-        return;
-      }
-
-      const player = game.players.find((p) => {
-        return p.sessionid === req.cookies.sessionid;
-      });
-
-      if (player.cards.length !== 2) {
-        res.status(400);
-        res.end();
-        return;
-      }
-
-      if (player.money < amount) {
-        res.status(400);
-        res.end();
-        return;
-      }
-
-      // Zero is a special case; the player is resetting their bet, perhaps due
-      // to a mistaken earlier bet
-      if (amount === 0) {
-        player.money += player.bet;
-        player.bet = 0;
-      } else {
-        // All other bets are additive
-        player.money -= amount;
-        player.bet += amount;
-      }
-
-      games.write(gameId, game);
+      return;
     })
-    .then(() => {
-      res.status(202);
+    .catch((e) => {
+      logger.warn(e.message, { stack: e.stack });
+      res.status(400);
       res.end();
     });
 });
+
 router.post('/games/:gameId/collectBets', (req, res) => {
   const { gameId } = req.params;
   games
