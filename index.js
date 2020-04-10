@@ -1,9 +1,15 @@
+const http = require('http');
 const crypto = require('crypto');
 const express = require('express');
 const cookieparser = require('cookie-parser');
 const logger = require('./server/logger');
 const apiRouter = require('./server/api');
+const websocket = require('./server/websocket');
+
 const app = express();
+const server = http.createServer(app);
+websocket(server);
+
 app.use(cookieparser());
 
 app.use((req, res, next) => {
@@ -41,6 +47,6 @@ app.use((req, res) => {
   }
 });
 
-app.listen(3000, () => {
+server.listen(3000, () => {
   logger.info('listening on :3000');
 });

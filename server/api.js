@@ -143,16 +143,16 @@ router.post('/games/:gameId/turns', bodyParser.json(), (req, res) => {
   games
     .read(gameId)
     .then((game) => {
-      const currentPlayer = game.players.findIndex(
+      const playerIndex = game.players.findIndex(
         ({ sessionid }) => sessionid === req.cookies.sessionid
       );
-      if (currentPlayer === -1) {
+      if (playerIndex === -1) {
         res.status(403);
         res.end();
         return;
       }
 
-      game.takeTurn(currentPlayer, req.body.bet || 0, req.body.fold || false);
+      game.takeTurn(playerIndex, req.body.bet || 0, req.body.fold || false);
 
       return games.write(gameId, game);
     })
@@ -218,32 +218,18 @@ router.post('/games/:gameId/giveMoney', bodyParser.json(), (req, res) => {
 router.get('/games/:gameId', (req, res) => {
   const { gameId } = req.params;
   games.read(gameId).then((game) => {
-    game.players = game.players.map((p) => {
-      if (p.sessionid !== req.cookies.sessionid) {
-        return {
-          name: p.name,
-          cards: p.cards.map((c) => {
-            return c.show ? c : null;
-          }),
-          money: p.money,
-          bet: p.bet,
-          me: false
-        };
-      }
+    const playerIndex = game.players.findIndex(
+      (p) => p.sessionid === req.cookies.sessionid
+    );
 
-      return {
-        name: p.name,
-        cards: p.cards,
-        money: p.money,
-        bet: p.bet,
-        me: true
-      };
-    });
-
-    game.deck = game.deck.length;
+    if (playerIndex === -1 && game.locked) {
+      res.status(403);
+      res.end();
+      return;
+    }
 
     res.set('content-type', 'application/json');
-    res.send(game.toJSON());
+    res.send(JSON.stringify(game.forPlayer(playerIndex)));
   });
 });
 

@@ -32,6 +32,11 @@ class GameStorage {
     });
   }
 
+  /**
+   *
+   * @param {string|number} gameId the Game ID
+   * @returns {Promise<Game>} the game
+   */
   async read(gameId) {
     if (!this.ready) {
       return Promise.reject(new Error('GameStorage not ready'));

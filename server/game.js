@@ -1,5 +1,22 @@
 const Card = require('./card');
 
+/**
+ * @typedef {Object} Player
+ * @property {string} sessionid
+ * @property {Array<Card>} cards
+ *
+ */
+
+/**
+ * @typedef {Object} PublicGame a Game as presented to a user, with secret info redacted
+ * @property {Array<Player>} players
+ * @property {number} deck the number of cards remaining in the deck
+ * @property {number} money the amount of money on the table
+ * @property {number} dealer the index of the player who is the current dealer
+ * @property {number} turn the index of the player whose turn it is to play
+ * @property {boolean} locked whether the game is locked (has already begun)
+ */
+
 const BUY_IN = 200;
 
 const blankGame = () => {
@@ -13,16 +30,30 @@ const blankGame = () => {
     locked: false
   };
 };
+
 class Game {
   constructor(options) {
     options = options || blankGame();
 
+    /** @type {Array<Player>} */
     this.players = options.players;
+
+    /** @type {Array<Card>} */
     this.pile = options.pile;
+
+    /** @type {number} */
     this.money = options.money;
+
+    /** @type {Array<Card>} */
     this.deck = options.deck;
+
+    /** @type {number} */
     this.dealer = options.dealer;
+
+    /** @type {number} */
     this.turn = options.turn;
+
+    /** @type {boolean} */
     this.locked = options.locked;
   }
 
@@ -122,6 +153,50 @@ class Game {
     this.turn = this.nextActivePlayer(this.dealer + 1, this.players);
   }
 
+  /**
+   *
+   * @param {number} playerIndex The index of the player to format the game for
+   * @returns {PublicGame} the game, with sensitive info redacted
+   */
+  forPlayer(playerIndex) {
+    const publicGame = {
+      players: [],
+      deck: this.deck.length,
+      pile: [...this.pile],
+      money: this.money,
+      dealer: this.dealer,
+      turn: this.turn,
+      locked: this.locked
+    };
+
+    publicGame.players = this.players.map((p, idx) => {
+      if (idx !== playerIndex) {
+        return {
+          name: p.name,
+          cards: p.cards.map((c) => {
+            return c.show ? c : null;
+          }),
+          money: p.money,
+          bet: p.bet,
+          me: false
+        };
+      }
+
+      return {
+        name: p.name,
+        cards: p.cards,
+        money: p.money,
+        bet: p.bet,
+        me: true
+      };
+    });
+
+    return publicGame;
+  }
+
+  /**
+   * @returns {string} JSON-serialized game
+   */
   toJSON() {
     return JSON.stringify({ ...this });
   }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useGame } from '../hooks/game';
 import Game from '../classes/game';
 import Card from '../components/card';
 import JoinGame from '../components/join-game';
@@ -71,15 +72,9 @@ const GamePage = () => {
       });
   }, [fetchedAt]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setFetchedAt(Date.now());
-    }, 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
+  useGame(gameId, (game) => {
+    setGame(game);
+  });
 
   useEffect(() => {
     if (!autoSubmit) {
