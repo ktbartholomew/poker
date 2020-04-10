@@ -124,7 +124,7 @@ const GamePage = () => {
       <div>
         <div id="other-players" className="bg-dark mb-2">
           {game.players().map((p, idx) => {
-            const playerBet = p.me ? pendingBet || p.bet : p.bet;
+            const playerBet = p.me ? pendingBet + p.bet : p.bet;
             return (
               <div
                 key={idx}

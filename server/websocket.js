@@ -13,9 +13,6 @@ class GameWatcher extends EventEmitter {
         return;
       }
 
-      logger.debug('reading game ' + gameId, {
-        listenerCount: this.listenerCount('update')
-      });
       games.read(gameId).then((game) => {
         this.emit('update', game);
       });
@@ -54,8 +51,11 @@ const watchGame = (gameId, ws, playerIndex) => {
       lastUpdate = newUpdate;
     }
   };
+
+  logger.info(`watching game ${gameId} for changes`);
   watchers[gameId].addListener('update', listener);
   ws.on('close', () => {
+    logger.info(`watcher for game ${gameId} disconnected`);
     watchers[gameId].removeListener('update', listener);
   });
 };
