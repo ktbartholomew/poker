@@ -1,33 +1,10 @@
 import React from 'react';
-
-const cardStyles = {
-  backgroundColor: 'white',
-  border: 'solid 2px white',
-  boxShadow: '0px 1px 2px 1px rgba(0,0,0,0.25)',
-  borderRadius: '0.25em',
-  display: 'inline-block',
-  marginLeft: '0.25em',
-  marginTop: '0.25em',
-  width: '2.75em',
-  whitespace: 'nowrap',
-  overflow: 'hidden',
-  lineHeight: '4em',
-  textAlign: 'center'
-};
-
 // eslint-disable-next-line react/prop-types
 const Card = ({ card, style: propStyles }) => {
   if (!card) {
     return (
-      <div
-        style={{
-          ...cardStyles,
-          ...propStyles,
-          color: 'white',
-          backgroundColor: 'maroon'
-        }}
-      >
-        ?
+      <div className="playing-card" style={{ ...propStyles }}>
+        <div className="back"></div>
       </div>
     );
   }
@@ -69,10 +46,13 @@ const Card = ({ card, style: propStyles }) => {
     default:
       rankString = rank.toString();
   }
+
   return (
-    <div className="card" style={{ ...cardStyles, color }}>
-      {rankString}
-      {suitString}
+    <div className="playing-card" style={{ color }}>
+      <div className="front">
+        {rankString}
+        {suitString}
+      </div>
     </div>
   );
 };
