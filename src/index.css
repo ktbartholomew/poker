@@ -6,6 +6,7 @@
   #table-cards {
     font-size: 2.25rem;
     max-width: 90%;
+    perspective: 1200px;
   }
 }
 
@@ -17,6 +18,7 @@
   justify-content: flex-start;
   flex-direction: row;
   flex-wrap: wrap;
+  perspective: 1400px;
 }
 
 #other-players .player {
@@ -35,6 +37,13 @@
   position: relative;
   line-height: 3.7em;
   text-align: center;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition: transform 0.3s ease-in;
+}
+
+.playing-card.show {
+  transform: rotateY(180deg);
 }
 
 .playing-card > .front {
@@ -44,6 +53,9 @@
   position: absolute;
   height: 100%;
   width: 100%;
+  transform: rotateY(180deg);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .playing-card > .back {
@@ -55,6 +67,8 @@
   position: absolute;
   height: 100%;
   width: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .chips {
@@ -94,7 +108,7 @@
   border-color: rgb(141, 2, 2);
 }
 .btn-chip.blue {
-  border-color: rgb(7, 53, 255);
+  border-color: rgb(0, 98, 204);
 }
 .btn-chip.green {
   border-color: rgb(20,100,20)

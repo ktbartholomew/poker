@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 // eslint-disable-next-line react/prop-types
 const Card = ({ card, style: propStyles }) => {
+  const [showClass, setShowClass] = useState('');
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setShowClass(' show');
+    }, 300);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
+
   if (!card) {
     return (
       <div className="playing-card" style={{ ...propStyles }}>
@@ -48,11 +59,12 @@ const Card = ({ card, style: propStyles }) => {
   }
 
   return (
-    <div className="playing-card" style={{ color }}>
+    <div className={['playing-card', showClass].join(' ')} style={{ color }}>
       <div className="front">
         {rankString}
         {suitString}
       </div>
+      <div className="back"></div>
     </div>
   );
 };
