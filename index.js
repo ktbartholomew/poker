@@ -32,7 +32,8 @@ app.use((req, res, next) => {
   if (!req.cookies || !req.cookies.sessionid) {
     res.cookie('sessionid', crypto.randomBytes(32).toString('hex'), {
       path: '/',
-      httpOnly: true
+      httpOnly: true,
+      expires: new Date(Date.now() + 604800000)
     });
   }
 
