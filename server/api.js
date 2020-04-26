@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const express = require('express');
 const bodyParser = require('body-parser');
 const Game = require('./game');
@@ -69,6 +70,21 @@ router.post('/games/:gameId/join', bodyParser.json(), (req, res) => {
       res.status(202);
       res.end();
     });
+});
+
+router.get('/games/:gameId/joinToken', (req, res) => {
+  const { gameId } = req.params;
+  games.read(gameId).then((game) => {
+    if (req.cookies.sessionid !== game.players[0].sessionid) {
+      res.status(403);
+      res.end();
+      return;
+    }
+
+    res.status(200);
+    res.send({ joinToken: crypto.randomBytes(4).toString('hex') });
+    return;
+  });
 });
 
 router.post('/games/:gameId/deal', (req, res) => {
@@ -157,6 +173,10 @@ router.post('/games/:gameId/turns', bodyParser.json(), (req, res) => {
       return games.write(gameId, game);
     })
     .then(() => {
+      if (res.headersSent) {
+        return;
+      }
+
       res.status(202);
       res.end();
       return;
@@ -183,6 +203,10 @@ router.post('/games/:gameId/collectBets', (req, res) => {
       return games.write(gameId, game);
     })
     .then(() => {
+      if (res.headersSent) {
+        return;
+      }
+
       res.status(202);
       res.end();
     });
@@ -210,6 +234,35 @@ router.post('/games/:gameId/giveMoney', bodyParser.json(), (req, res) => {
       return games.write(gameId, game);
     })
     .then(() => {
+      if (res.headersSent) {
+        return;
+      }
+
+      res.status(202);
+      res.end();
+    });
+});
+
+router.post('/games/:gameId/bankroll', bodyParser.json(), (req, res) => {
+  const { gameId } = req.params;
+
+  games
+    .read(gameId)
+    .then((game) => {
+      if (req.cookies.sessionid !== game.players[0].sessionid) {
+        res.status(403);
+        res.end();
+        return;
+      }
+
+      game.adjustBankroll(req.body);
+      return games.write(gameId, game);
+    })
+    .then(() => {
+      if (res.headersSent) {
+        return;
+      }
+
       res.status(202);
       res.end();
     });

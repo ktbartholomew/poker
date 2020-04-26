@@ -97,6 +97,18 @@ class Game {
     this.money = 0;
   }
 
+  adjustBankroll(players) {
+    if (players.length !== this.players.length) {
+      throw new Error(
+        'provided list of players does not match number of players in the game'
+      );
+    }
+
+    players.forEach((p, idx) => {
+      this.players[idx].money = parseInt(p.money) || 0;
+    });
+  }
+
   nextActivePlayer(current, players) {
     const p = players[current % players.length];
     if (p.money !== 0 && p.cards.length !== 0) {

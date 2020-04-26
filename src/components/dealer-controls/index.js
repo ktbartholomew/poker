@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
+import Dropdown from 'react-bootstrap/Dropdown';
+import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
+import AdjustBankrollModal from './adjust-bankroll-modal';
+import LateJoinModal from './late-join-modal';
 
 const DealerControls = ({ game, onChange }) => {
-  const [dropdown, setDropdown] = useState(false);
+  const [showLateJoin, setShowLateJoin] = useState(false);
+  const [showAdjustBankroll, setShowAdjustBankroll] = useState(false);
 
   if (!game.isOwner()) {
     return null;
@@ -53,7 +58,6 @@ const DealerControls = ({ game, onChange }) => {
   const awardHand = (playerIndex) => {
     return (e) => {
       e.preventDefault();
-      setDropdown(false);
 
       return fetch(`/api/games/${game.id}/giveMoney`, {
         method: 'POST',
@@ -77,63 +81,100 @@ const DealerControls = ({ game, onChange }) => {
     <div className="detail-controls bg-dark">
       <div className="btn-group">
         {!game.isStarted() && (
-          <button className="btn btn-primary" onClick={deal}>
+          <Button variant="primary" onClick={deal}>
             Start Game
-          </button>
+          </Button>
         )}
         {game.isStarted() && (
-          <button
+          <Button
             className={`btn btn-primary${
               game.pile().length >= 5 || maxBet > 0 ? ' disabled' : ''
             }`}
             onClick={drawCard}
           >
             Draw<span className="d-none d-md-inline"> Card</span>
-          </button>
+          </Button>
         )}
 
         {game.isStarted() && (
-          <button
+          <Button
             className={`btn btn-light ${maxBet === 0 ? ' disabled' : ''}`}
             onClick={collectBets}
           >
             Collect<span className="d-none d-md-inline"> Bets</span>
-          </button>
+          </Button>
         )}
         {game.isStarted() && (
-          <button
+          <Button
             className={`btn btn-light${
               game.pile().length < 5 ? ' disabled' : ''
             }`}
             onClick={showCards}
           >
             Show<span className="d-none d-md-inline"> Cards</span>
-          </button>
+          </Button>
         )}
         {game.isStarted() && (
           <>
-            <button
-              className="btn btn-success dropdown-toggle"
-              onClick={() => {
-                setDropdown(!dropdown);
-              }}
-            >
-              💰 Winner
-            </button>
-            <div className={`dropdown-menu${dropdown ? ' show' : ''}`}>
-              {game.players().map((p, idx) => {
-                return (
-                  <a
-                    key={idx}
-                    href="#"
-                    className="dropdown-item"
-                    onClick={awardHand(idx)}
-                  >
-                    {p.name}
-                  </a>
-                );
-              })}
-            </div>
+            <Dropdown>
+              <Dropdown.Toggle style={{ borderRadius: '0' }} variant="success">
+                💰 Winner
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {game.players().map((p, idx) => {
+                  if (p.cards.length === 0) {
+                    return;
+                  }
+
+                  return (
+                    <Dropdown.Item key={idx} onClick={awardHand(idx)}>
+                      {p.name}
+                    </Dropdown.Item>
+                  );
+                })}
+              </Dropdown.Menu>
+            </Dropdown>
+            <Dropdown>
+              <Dropdown.Toggle
+                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                variant="light"
+              >
+                Other
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item
+                  onClick={() => {
+                    setShowLateJoin(true);
+                  }}
+                >
+                  Late Join
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setShowAdjustBankroll(true);
+                  }}
+                >
+                  Adjust Bankroll
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+            {showLateJoin && (
+              <LateJoinModal
+                gameId={game.id}
+                onClose={() => {
+                  setShowLateJoin(false);
+                }}
+              />
+            )}
+            {showAdjustBankroll && (
+              <AdjustBankrollModal
+                gameId={game.id}
+                players={game.players()}
+                onClose={() => {
+                  setShowAdjustBankroll(false);
+                }}
+              />
+            )}
           </>
         )}
       </div>
