@@ -7,7 +7,9 @@ const logger = require('./logger');
 
 const router = express.Router();
 
-router.use('/games/:gameId', (req, res, next) => {
+router.use('/games/:gameId', bodyParser.json(), (req, res, next) => {
+  const joinToken = req.query.joinToken || req.body.joinToken;
+
   games
     .read(req.params.gameId)
     .then((game) => {
@@ -15,6 +17,7 @@ router.use('/games/:gameId', (req, res, next) => {
         game.players.filter((p) => {
           return p.sessionid === req.cookies.sessionid;
         }).length === 0 &&
+        !game.joinTokens.includes(joinToken) &&
         game.locked
       ) {
         res.status(403);
@@ -59,10 +62,13 @@ router.post('/games/:gameId/join', bodyParser.json(), (req, res) => {
   games
     .read(gameId)
     .then((game) => {
-      game.addPlayer({
-        name: req.body.name,
-        sessionid: req.cookies.sessionid
-      });
+      game.addPlayer(
+        {
+          name: req.body.name,
+          sessionid: req.cookies.sessionid
+        },
+        req.body.joinToken
+      );
 
       return games.write(gameId, game);
     })
@@ -81,9 +87,13 @@ router.get('/games/:gameId/joinToken', (req, res) => {
       return;
     }
 
-    res.status(200);
-    res.send({ joinToken: crypto.randomBytes(4).toString('hex') });
-    return;
+    const joinToken = crypto.randomBytes(4).toString('hex');
+
+    game.joinTokens.push(joinToken);
+
+    res.status(201);
+    res.send({ joinToken });
+    return games.write(gameId, game);
   });
 });
 
@@ -274,12 +284,6 @@ router.get('/games/:gameId', (req, res) => {
     const playerIndex = game.players.findIndex(
       (p) => p.sessionid === req.cookies.sessionid
     );
-
-    if (playerIndex === -1 && game.locked) {
-      res.status(403);
-      res.end();
-      return;
-    }
 
     res.set('content-type', 'application/json');
     res.send(JSON.stringify(game.forPlayer(playerIndex)));

@@ -8,6 +8,12 @@ const Card = require('./card');
  */
 
 /**
+ * @typedef {Object} GamePreferences
+ * @property {number} buyIn the amount of money new players have when they join the game
+ * @property {Array<number>} antes the antes for players following the dealer
+ */
+
+/**
  * @typedef {Object} PublicGame a Game as presented to a user, with secret info redacted
  * @property {Array<Player>} players
  * @property {number} deck the number of cards remaining in the deck
@@ -16,9 +22,6 @@ const Card = require('./card');
  * @property {number} turn the index of the player whose turn it is to play
  * @property {boolean} locked whether the game is locked (has already begun)
  */
-
-const BUY_IN = 200;
-
 const blankGame = () => {
   return {
     players: [],
@@ -27,7 +30,12 @@ const blankGame = () => {
     deck: newDeck(),
     dealer: -1,
     turn: 0,
-    locked: false
+    locked: false,
+    joinTokens: [],
+    preferences: {
+      buyIn: 200,
+      antes: [5, 10]
+    }
   };
 };
 
@@ -55,6 +63,12 @@ class Game {
 
     /** @type {boolean} */
     this.locked = options.locked;
+
+    /** @type {Array<string>} */
+    this.joinTokens = options.joinTokens;
+
+    /** @type {GamePreferences} */
+    this.preferences = options.preferences;
   }
 
   drawCard() {
@@ -69,12 +83,19 @@ class Game {
     return this.deck.length;
   }
 
-  addPlayer(player) {
+  addPlayer(player, joinToken) {
     if (this.locked) {
-      throw new Error('game is locked');
+      if (!joinToken || !this.joinTokens.includes(joinToken)) {
+        throw new Error('game is locked');
+      }
     }
 
-    this.players.push({ ...player, cards: [], money: BUY_IN, bet: 0 });
+    this.players.push({
+      ...player,
+      cards: [],
+      money: this.preferences.buyIn,
+      bet: 0
+    });
   }
 
   showCards() {
@@ -163,6 +184,16 @@ class Game {
     // this.nextActivePlayer requires the players to have cards first
     this.dealer = this.nextActivePlayer(this.dealer + 1, this.players);
     this.turn = this.nextActivePlayer(this.dealer + 1, this.players);
+
+    // Automatically bet the antes from the players immediately after the dealer
+    this.preferences.antes.forEach((ante) => {
+      const realAnte = Math.min(ante, this.players[this.turn].money);
+
+      this.players[this.turn].money -= realAnte;
+      this.players[this.turn].bet += realAnte;
+
+      this.turn = this.nextActivePlayer(this.turn + 1, this.players);
+    });
   }
 
   /**

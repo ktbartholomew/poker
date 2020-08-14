@@ -46,7 +46,7 @@ const GamePage = () => {
   };
 
   useEffect(() => {
-    fetch(`/api/games/${gameId}`)
+    fetch(`/api/games/${gameId}${window.location.search}`)
       .then((res) => {
         if (!res.ok) {
           if (res.status === 404) {

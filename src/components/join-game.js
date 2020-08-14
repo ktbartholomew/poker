@@ -14,10 +14,14 @@ const JoinGame = ({ gameId, onJoin }) => {
       return;
     }
 
+    const params = new URLSearchParams(window.location.search);
     fetch(`/api/games/${gameId}/join`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ name })
+      body: JSON.stringify({
+        name,
+        joinToken: params.get('joinToken')
+      })
     }).then(() => {
       onJoin();
     });
