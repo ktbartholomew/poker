@@ -4,10 +4,12 @@ import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 import AdjustBankrollModal from './adjust-bankroll-modal';
 import LateJoinModal from './late-join-modal';
+import SetBlindsModal from './set-blinds-modal';
 
 const DealerControls = ({ game, onChange }) => {
   const [showLateJoin, setShowLateJoin] = useState(false);
   const [showAdjustBankroll, setShowAdjustBankroll] = useState(false);
+  const [showBlinds, setShowBlinds] = useState(false);
 
   if (!game.isOwner()) {
     return null;
@@ -144,17 +146,25 @@ const DealerControls = ({ game, onChange }) => {
               <Dropdown.Menu>
                 <Dropdown.Item
                   onClick={() => {
-                    setShowLateJoin(true);
+                    setShowBlinds(true);
                   }}
                 >
-                  Late Join
+                  Set Blinds
                 </Dropdown.Item>
+
                 <Dropdown.Item
                   onClick={() => {
                     setShowAdjustBankroll(true);
                   }}
                 >
                   Adjust Bankroll
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setShowLateJoin(true);
+                  }}
+                >
+                  Late Join
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
@@ -172,6 +182,14 @@ const DealerControls = ({ game, onChange }) => {
                 players={game.players()}
                 onClose={() => {
                   setShowAdjustBankroll(false);
+                }}
+              />
+            )}
+            {showBlinds && (
+              <SetBlindsModal
+                game={game}
+                onClose={() => {
+                  setShowBlinds(false);
                 }}
               />
             )}
