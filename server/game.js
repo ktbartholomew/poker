@@ -209,7 +209,8 @@ class Game {
       money: this.money,
       dealer: this.dealer,
       turn: this.turn,
-      locked: this.locked
+      locked: this.locked,
+      preferences: this.preferences
     };
 
     publicGame.players = this.players.map((p, idx) => {

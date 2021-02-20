@@ -36,6 +36,10 @@ class Game {
     return this.data.locked;
   }
 
+  preferences() {
+    return this.data.preferences;
+  }
+
   isOwner() {
     let meIndex = -1;
 

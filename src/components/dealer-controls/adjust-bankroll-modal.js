@@ -41,7 +41,9 @@ const AdjustBankrollModal = ({ gameId, players, onClose }) => {
   return (
     <Modal show={true} size="lg">
       <Form onSubmit={submit}>
-        <Modal.Header>Adjust Bankroll</Modal.Header>
+        <Modal.Header>
+          <h4>Adjust Bankroll</h4>
+        </Modal.Header>
         <Modal.Body>
           <p>
             Set the amount of money each player should have. The amounts don’t
