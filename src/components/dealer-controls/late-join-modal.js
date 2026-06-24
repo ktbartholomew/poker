@@ -24,7 +24,9 @@ const LateJoinModal = ({ gameId, onClose }) => {
 
   return (
     <Modal show={true}>
-      <Modal.Header>Late Join</Modal.Header>
+      <Modal.Header>
+        <h4>Late Join</h4>
+      </Modal.Header>
       <Modal.Body>
         {loading && <p>Loading&hellip;</p>}
         {!loading && (
